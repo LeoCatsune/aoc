@@ -6,15 +6,23 @@ DOWN = -1
 
 def main():
 	validLines = 0
+	forcedLines = 0
 	file = open("input.txt", "r")
 	lines = file.readlines()
 	for line in lines:
 		vals = [int(v) for v in line.split(" ")]
 		if isValid(vals):
 			validLines += 1
+		else:
+			# brute force. works a charm.
+			for v in range(len(vals)):
+				if isValid(vals[:v] + vals[v+1:]):
+					forcedLines += 1
+					break
 	
 	print("lines:", len(lines))
-	print("valid:", validLines)
+	print("valid(1):", validLines)
+	print("valid(2):", validLines + forcedLines)
 
 
 def isValid(vals):
