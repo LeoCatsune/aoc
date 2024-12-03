@@ -4,15 +4,30 @@ import re
 
 def main():
 	total = 0
+	newtotal = 0
+	enable = True
 	file = open("input.txt", "r")
 	data = file.read()
 
-	mul = re.compile(r'mul\((\d+),(\d+)\)')
+	# and then I had two problems.
+	mul = re.compile(r'(?P<func>do(?:n\'t)?)\(\)|mul\((?P<l>\d+),(?P<r>\d+)\)')
 
-	for res in [int(x.group(1)) * int(x.group(2)) for x in re.finditer(mul, data)]:
-		total += res
+	for res in re.finditer(mul, data):
+		match res.group("func"):
+			case "do":
+				enable = True
+				continue
+			case "don't":
+				enable = False
+				continue
+		
+		if enable:
+			newtotal += int(res.group("l")) * int(res.group("r"))
+		
+		total += int(res.group("l")) * int(res.group("r"))
 	
-	print("total:", total)
+	print("total(1):", total)
+	print("total(2):", newtotal)
 
 if __name__ == "__main__":
 	main()
