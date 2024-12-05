@@ -17,10 +17,8 @@ while data[pos] != "":
 print("rules:", len(rules))
 pos += 1
 
-# Process page lists
-while pos < len(data):
-	rulesOk = True
-	pages = [int(p) for p in data[pos].split(",")]
+# refactor: pulled this logic out into a function for reuse
+def validate(pages, rules):
 	for (l, r) in rules:
 		try:
 			# Get the positions of the pages in the current rule...
@@ -28,18 +26,41 @@ while pos < len(data):
 			rpos = pages.index(r)
 
 			if lpos > rpos:
-				# Rule violation - continue to the next page.
-				rulesOk = False
-				break
+				return False, (l, r), (lpos, rpos)
 
 		except ValueError:
 			# Dispose of ValueError here by continuing to the next rule
 			# - if a rule contains a page number not contained in the set, ignore it.
 			continue
+	return True, None, None
+
+violating: list[list[int]] = []
+
+# Process page lists
+while pos < len(data):
+	pages = [int(p) for p in data[pos].split(",")]
 	
-	if rulesOk:
+	ok, _, _ = validate(pages, rules)
+	if ok:
 		total += pages[int(len(pages)/2)]
+	else:
+		violating.append(pages)
 	
 	pos += 1
 
-print("total:", total)
+print("total(1):", total)
+
+newTotal = 0
+
+# ALL OF THE BRUTE FORCE.
+for pages in violating:
+	ok = False
+	while not ok:
+		ok, rule, pos = validate(pages, rules)
+		if rule is not None:
+			# print(pages, rule, pos)
+			page = pages.pop(pos[1])
+			pages.insert(pos[0], page)
+	newTotal += pages[int(len(pages)/2)]
+
+print("total(2):", newTotal)
